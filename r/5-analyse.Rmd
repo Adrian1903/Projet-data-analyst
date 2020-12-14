@@ -1,0 +1,195 @@
+---
+title: "Untitled"
+author: "Adrian"
+date: "06/04/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+setwd('C:/Adrian - GDrive/Professionnel/Formation/Informatique - Digital/Data University/Projet certification/csv')
+```
+
+```{r}
+df =  read.csv2('C:/Adrian - GDrive/Professionnel/Formation/Informatique - Digital/Data University/Projet certification/csv/5-dataset.csv', sep = ',', dec = '.', encoding = 'UTF-8')
+```
+
+```{r}
+head(df)
+str(df)
+summary(df)
+```
+
+```{r}
+df$dewey_class = as.factor(df$dewey_class)
+```
+
+
+# Histogramme
+
+```{r}
+df %>% summarize(min = round(min(retention_delay_years, na.rm = TRUE),2),
+                 mean = round(mean(retention_delay_years, na.rm = TRUE),2),
+                 max = round(max(retention_delay_years, na.rm = TRUE),2),
+                 sd = round(sd(retention_delay_years, na.rm = TRUE),2)
+                 )
+```
+
+
+```{r}
+df %>% 
+  ggplot(aes(retention_delay_years)) + 
+  geom_histogram(fill='deepskyblue3', col='white') +
+  geom_vline(xintercept = 5.33, linetype="dashed", color = "red", size=1) +
+  labs(title = "Répartition du délai de stockage", 
+       subtitle = "Le délai de conservation moyen est de 5 ans et 4 mois.", 
+       caption = "Source : le-livre", 
+       x="Délai de stockage en année", 
+       y="") +
+  theme(plot.title = element_text(color="deepskyblue4", size=14, face="bold"),
+        plot.subtitle = element_text(face="italic"))
+
+```
+
+# Fonction de répartition
+
+```{r}
+df %>% ggplot(aes(retention_delay_years)) + stat_ecdf(col='deepskyblue3', size=1) + 
+  geom_segment(aes(x = 7.83, y = 0, xend = 7.83, yend = 0.75), linetype="dashed", color = "red", size=1) + 
+  geom_segment(aes(x = 0, y = 0.75, xend = 7.83, yend = 0.75), linetype="dashed", color = "red", size=1) +
+  labs(title = "Fonction de répartition appliqué au délai de stockage", 
+       subtitle = "75 % de l'échantillon s'est vendu dans un délai de 7 ans et 10 mois", 
+       caption = "Source : le-livre", 
+       x="Délai de stockage en année", 
+       y="") +
+  theme(plot.title = element_text(color="deepskyblue4", size=14, face="bold"),
+        plot.subtitle = element_text(face="italic"))
+```
+
+# Boxplot
+
+```{r}
+round(quantile(df$retention_delay_years),2)
+```
+
+
+```{r}
+df %>% ggplot(aes(retention_delay_years)) + 
+        geom_boxplot(fill='deepskyblue3') +
+        labs(title = "Propriétés statistiques du délai de stockage", 
+              subtitle = "La médiane est de 4 ans et 7 mois.", 
+              caption = "Source : le-livre", 
+              x="Délai de stockage en année", 
+              y="") + 
+  theme(plot.title = element_text(color="deepskyblue4", size=14, face="bold"),
+        plot.subtitle = element_text(face="italic"),
+        axis.text.y = element_blank())
+```
+
+
+# Comparaisons avec variables quali
+
+```{r}
+df %>% ggplot(aes(sale_source, retention_delay_years)) +
+        geom_boxplot(fill='deepskyblue3') +
+        labs(title = "Etude du délai de délai en fonction des sources de ventes", 
+              subtitle = "Il n'y a pas de différences flagrantes entre les sources de ventes", 
+              caption = "Source : le-livre", 
+              x="", 
+              y="Délai de stockage en année") + 
+  theme(plot.title = element_text(color="deepskyblue4", size=14, face="bold"),
+        plot.subtitle = element_text(face="italic"),
+        axis.text.x = element_text(size=13),
+        axis.text.y = element_text(size=13))
+```
+
+
+
+```{r}
+df$century = factor(df$century, levels=c("XVIIe","XVIIIe","XIXe", "XXe", "XXIe"))
+
+df %>% ggplot(aes(century, retention_delay_years)) +
+        geom_boxplot(fill='deepskyblue3') +
+        labs(title = "Etude du délai de stockage en fonction de l'année d'impression", 
+              subtitle = "Les ouvrages du XVIIIe siècle ont tendance à rester plus longtemps en stock", 
+              caption = "Source : le-livre", 
+              x="", 
+              y="Délai de stockage en année") + 
+  theme(plot.title = element_text(color="deepskyblue4", size=14, face="bold"),
+        plot.subtitle = element_text(face="italic"),
+        axis.text.x = element_text(size=13),
+        axis.text.y = element_text(size=13))
+```
+
+
+
+
+
+```{r}
+df %>% filter(label_dewey_class_y != "") %>% 
+        ggplot(aes(label_dewey_class_y, retention_delay_years)) +
+        geom_boxplot(fill='deepskyblue3') +
+        labs(title = "Etude du délai de stockage en fonction de la thématique", 
+              subtitle = "Aucune tendance ne se dégage", 
+              caption = "Source : le-livre", 
+              x="", 
+              y="Délai de stockage en année") + 
+  theme(plot.title = element_text(color="deepskyblue4", size=14, face="bold"),
+        plot.subtitle = element_text(face="italic"),
+        axis.text.x = element_text(angle=-30, size=10),
+        axis.text.y = element_text(size=13))
+```
+
+
+
+
+# Modèle linéaire
+```{r}
+#df$quantity_rakuten = as.numeric(df$quantity_rakuten)
+df$quantity_rakuten = as.factor(df$quantity_rakuten)
+```
+
+
+```{r}
+str(df$quantity_rakuten)
+```
+```{r}
+df %>% count(quantity_rakuten)
+```
+
+
+```{r}
+#df_lm = df %>% filter(isbn != "", quantity_rakuten > 4)
+df_lm = df[df$quantity_rakuten > "4",]
+count(df_lm)
+```
+
+## Hypothèse
+H0 = Il n'y a pas de lien entre le délais de rétention et le prix de vente
+H1 = Il y a un lien entre le délai de rétention et le prix de vente
+
+## Choix du test
+J'ai 2 variables quantitatives, je fais une régression linéaire
+
+## Vérification des résidus
+
+```{r}
+lm = lm(df$retention_delay_years~df$item_price)
+summary(lm)
+par(mfrow=c(2,2)) 
+plot(lm)
+```
+
+Les résidus ne suivent pas une distribution normales,
+Il n’y a une tendance entre les résidus et les fitted values, il reste des informations
+Il n'y a pas d'homogéneïté des variances.
+
+Les conditions du test ne sont pas validés

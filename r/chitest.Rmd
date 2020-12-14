@@ -1,0 +1,47 @@
+---
+title: "Chi test"
+author: "Adrian"
+date: "19/03/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(abind, pos=17)
+.Table <- matrix(c(278,4458,335,3355), 2, 2, byrow=TRUE)
+dimnames(.Table) <- list("Platform"=c("amazon", "lelivre"), "Retention"=c("<=1", ">1"))
+.Table  # Counts
+.Test <- chisq.test(.Table, correct=FALSE)
+.Test
+```
+
+Rcmdr>  library(abind, pos=17)
+
+Rcmdr>  .Table <- matrix(c(278,4458,335,3355), 2, 2, byrow=TRUE)
+
+Rcmdr>  dimnames(.Table) <- list("Platform"=c("amazon", "lelivre"), 
+Rcmdr+    "Retention"=c("<=1", ">1"))
+
+Rcmdr>  .Table  # Counts
+         Retention
+Platform  <=1   >1
+  amazon  278 4458
+  lelivre 335 3355
+
+Rcmdr>  .Test <- chisq.test(.Table, correct=FALSE)
+
+Rcmdr>  .Test
+
+	Pearson's Chi-squared test
+
+data:  .Table
+X-squared = 31.654, df = 1, p-value = 0.00000001842
+
+
+Rcmdr>  remove(.Test)
+
+Rcmdr>  remove(.Table)
